@@ -30,8 +30,7 @@ def forward_diff(image):
     diff_x_fw[:,1:]=np.diff(image,1,1)
     
     diff_y_fw=np.zeros_like(image)
-    diff_y_fw[1:,:]=np.diff(image,0,1)
-    
+    diff_y_fw[1:,:]=np.diff(image,1,0)    
     return diff_x_fw,diff_y_fw
 
 def back_diff(image):
@@ -43,7 +42,7 @@ def back_diff(image):
     diff_x_bc[:,0:-1]=-np.diff(image,1,1)
     
     diff_y_bc=np.zeros_like(image)
-    diff_y_bc[0:-1,:]=-np.diff(image)
+    diff_y_bc[0:-1,:]=-np.diff(image,1,0)
     
     return diff_x_bc,diff_y_bc
 
@@ -68,9 +67,9 @@ def boundry_pad(image,mid,boundry_type="periodic"):
     (s+2*mid)*(s+2*mid) pading image matrix.
 
     """
-    if boundry_type="periodic":
+    if boundry_type=="periodic":
         #填补周期边界
-        observe_image=np.zeros((image.shape[0]+2*n,image.shape[1]+2*n))
+        observe_image=np.zeros((image.shape[0]+2*mid,image.shape[1]+2*mid))
         observe_image[0:mid,0:mid]=image[-mid:,-mid:].copy()
         observe_image[0:mid,mid:-mid]=image[-mid:,:].copy()
         observe_image[0:mid,-mid:]=image[-mid:,0:mid].copy()
@@ -99,8 +98,8 @@ def central_diff(image):
             image_xy[i,j]=pad_image[i+2,j+2]+pad_image[i,j]-pad_image[i,j+2]-\
                           pad_image[i+2,j]
             image_xy[i,j]=0.25*image_xy[i,j]
-            image_x      =0.5*(pad_image[i+2,j+1]-pad_image[i,j+1])
-            image_y      =0.5*(pad_image[i+1,j+2]-pad_image[i+1,j])
+            image_x [i,j]=0.5*(pad_image[i+2,j+1]-pad_image[i,j+1])
+            image_y [i,j]=0.5*(pad_image[i+1,j+2]-pad_image[i+1,j])
     return image_xx,image_yy,image_xy,image_x,image_y
 
 def gauss_cur(image):
@@ -120,8 +119,8 @@ def gauss_cur(image):
     image_xx,image_yy,image_xy,image_x,image_y=central_diff(image)
     image_x_2=image_x**2
     image_y_2=image_y**2
-    grad_matrix=image_x_2+image_y_2
-    cur_matrix=image_xx*image_y_2-2*image_y*image_x*image_xy+\
+    grad_matrix=image_x_2+image_y_2+1e-1*np.ones_like(image)
+    cur_matrix=image_xx*image_y_2- 2*image_y*image_x*image_xy+\
                image_yy*image_x_2
     cur_matrix=cur_matrix/(grad_matrix**(1.5))
     cur_multiy_grad=cur_matrix/grad_matrix

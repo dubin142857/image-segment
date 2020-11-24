@@ -10,10 +10,11 @@ import sys, getopt
 
 def  default_options():
     options = {
-        "--image_path":"image/peppers256.png",
+        "--image_path":"image/graph.png",
         "--d":2,
-        "--delta_t":1,
-        "--max_iter":300,
+        "--delta_t":0.2,
+        "--max_iter":30,
+        "--level_alpha":1,
         "--output_image":"None",
         "--iprint":1
         }
