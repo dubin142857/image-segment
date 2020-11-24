@@ -118,6 +118,55 @@ def gauss_cur(image):
     """
     cur_matrix=np.zeros_like(image)
     image_xx,image_yy,image_xy,image_x,image_y=central_diff(image)
-    grad
+    image_x_2=image_x**2
+    image_y_2=image_y**2
+    grad_matrix=image_x_2+image_y_2
+    cur_matrix=image_xx*image_y_2-2*image_y*image_x*image_xy+\
+               image_yy*image_x_2
+    cur_matrix=cur_matrix/(grad_matrix**(1.5))
+    cur_multiy_grad=cur_matrix/grad_matrix
+    return cur_matrix,cur_multiy_grad
 
+def non_osc_upwind_plus(image):
+    """
+    Uaage:use to compute non-oscillotary upwind discretization while c>0
 
+    Parameters
+    ----------
+    image : matrix.
+
+    Returns
+    -------
+    upwind matrix when c>0.
+
+    """
+    image_x_bc,image_y_bc=back_diff(image)
+    image_x_fw,image_y_fw=forward_diff(image)
+    upwind_plus=np.zeros_like(image)
+    upwind_plus=np.maximum(image_x_bc,0)**2+np.minimum(image_x_fw,0)**2+\
+                np.maximum(image_y_bc,0)**2+np.minimum(image_y_fw,0)**2
+    upwind_plus=np.sqrt(upwind_plus)
+    return upwind_plus
+
+def non_osc_upwind_minus(image):
+    """
+    Uaage:use to compute non-oscillotary upwind discretization while c<=0
+
+    Parameters
+    ----------
+    image : matrix.
+
+    Returns
+    -------
+    upwind matrix when c>0.
+
+    """
+    image_x_bc,image_y_bc=back_diff(image)
+    image_x_fw,image_y_fw=forward_diff(image)
+    upwind_minus=np.zeros_like(image)
+    upwind_minus=np.maximum(image_x_fw,0)**2+np.minimum(image_x_bc,0)**2+\
+                np.maximum(image_y_fw,0)**2+np.minimum(image_y_bc,0)**2
+    upwind_minus=np.sqrt(upwind_minus)
+    return upwind_plus
+    
+    
