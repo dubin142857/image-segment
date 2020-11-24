@@ -29,6 +29,17 @@ globals().update(globalnames)
 #read image and convert to [0,1]
 f = skimage.io.imread(image_path)/256
 f = np.asarray(f, dtype=float)
+#观察图像不加噪声模糊
+image=f.copy()
+grad_image_x,grad_image_y=optfun.forward_diff(image)
+grad_image_norm_2=grad_image_x**2+grad_image_y**2
+#level set method
+u=optfun.initalizePhi(image,d)
+g_force_image=optfun.g_force(image)
+for i in range(max_iter):
+    cur_matrix,cur_multiy_grad=optfun.gauss_cur(image)
 
+    u+=delta_t*(cur_matrix,cur_multiy_grad)
+    
 
 
