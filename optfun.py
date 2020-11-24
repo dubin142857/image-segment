@@ -167,6 +167,6 @@ def non_osc_upwind_minus(image):
     upwind_minus=np.maximum(image_x_fw,0)**2+np.minimum(image_x_bc,0)**2+\
                 np.maximum(image_y_fw,0)**2+np.minimum(image_y_bc,0)**2
     upwind_minus=np.sqrt(upwind_minus)
-    return upwind_plus
+    return upwind_minus
     
     
