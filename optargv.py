@@ -11,12 +11,14 @@ import sys, getopt
 def  default_options():
     options = {
         "--image_path":"image/graph.png",
+        "--level_steps":10,
         "--d":2,
-        "--delta_t":0.2,
-        "--max_iter":30,
+        "--cfl":0.5,
+        "--delta_t":1,
+        "--max_iter":100,
         "--level_alpha":1,
         "--output_image":"None",
-        "--iprint":1
+        "--iprint":10
         }
     return options
 

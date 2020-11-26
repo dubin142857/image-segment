@@ -17,20 +17,69 @@ def initalizePhi(image,d):
         d    :level set function,outside is +d ,inside is -d
     """
     u=np.ones_like(image)
-    u[0,:]=0;u[:,0]=0;u[-1,:]=0;u[:,-1]=0
     u=-d*u
+    u[0:3,:]=d;u[:,0:3]=d;u[-3:,:]=d;u[:,-3:]=d
     return u
 
+def reinitial2d(phi,steps):
+    """
+    reinitialization
+    """
+    row=phi.shape[0]
+    col=phi.shape[1]
+    h=1/(max(row,col)-1)
+    eps=1e-9
+    cfl=0.5
+    dt=h*cfl
+    dx=1/(row-1)
+    dy=1/(col-1)
+    for k in range(steps):
+        xp,yp=forward_diff(phi)/dx
+        xn,yn=backd_diff(phi)/dy
+        phi_p=np.int64(phi>0)
+        phi_n=1-phi_p
+        godnov_p=np.sqrt(np.maximum((np.maximum(xn,0))**2,(np.minimum(xp,0))**2)+np.maximum((np.maximum(yn,0))**2,\
+                 np.minimum(yp,0)**2))
+        godnov_n=np.sqrt(np.maximum((np.minimum(xn,0))**2,(np.maximum(xp,0))**2)+np.maximum((np.minimum(yn,0))**2,\
+                 np.maximum(yp,0)**2))
+        phi = phi-dt*phi_p*(godnov_p-1)*phi/(np.sqrt(phi**2+godnov_p**2*dx*dy+eps))\
+            -dt*phi_n*(godnov-1)*phi/(np.sqrt(phi**2+godnov_n**2*dx*dy+eps))
+    return phi
+            
+
+def gradient_matrix(image):
+    """
+    compute gradient
+
+    Parameters
+    ----------
+    image : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """  
+    image_x_fw,image_y_fw=forward_diff(image)
+    image_x_bc,image_y_bc=back_diff(image)
+    return 0.5*(image_x_fw+image_x_bc),0.5*(image_y_bc+image_y_fw)          
 def forward_diff(image):
     """
     Usage:use to the right difference of each point in image
           and the right difference of the first col is all zero 
     """
+    dx=1
+    dy=1
+    # row=image.shape[0]
+    # col=image.shape[1]
+    # dx=1/(row-1)
+    # dy=1/(col-1)
     diff_x_fw=np.zeros_like(image)
-    diff_x_fw[:,1:]=np.diff(image,1,1)
+    diff_x_fw[:,0:-1]=np.diff(image,1,1)/dx
     
     diff_y_fw=np.zeros_like(image)
-    diff_y_fw[1:,:]=np.diff(image,1,0)    
+    diff_y_fw[0:-1,:]=np.diff(image,1,0) /dy   
     return diff_x_fw,diff_y_fw
 
 def back_diff(image):
@@ -38,11 +87,17 @@ def back_diff(image):
     Usage:use to the left difference of each point in image
           and the left difference of the last col is all zero 
     """
+    dx=1
+    dy=1
+    # row=image.shape[0]
+    # col=image.shape[1]
+    # dx=1/(row-1)
+    # dy=1/(col-1)
     diff_x_bc=np.zeros_like(image)
-    diff_x_bc[:,0:-1]=-np.diff(image,1,1)
+    diff_x_bc[:,1:]=-np.diff(image,1,1)/dx
     
     diff_y_bc=np.zeros_like(image)
-    diff_y_bc[0:-1,:]=-np.diff(image,1,0)
+    diff_y_bc[1:,:]=-np.diff(image,1,0)/dy
     
     return diff_x_bc,diff_y_bc
 
@@ -85,6 +140,12 @@ def central_diff(image):
     """
     Usage: use to compute the central differences of each point in image
     """
+    dx=1
+    dy=1
+    # row=image.shape[0]
+    # col=image.shape[1]
+    # dx=1/(row-1)
+    # dy=1/(col-1)
     image_xx=np.zeros_like(image)
     image_yy=np.zeros_like(image)
     image_xy=np.zeros_like(image)
@@ -100,7 +161,7 @@ def central_diff(image):
             image_xy[i,j]=0.25*image_xy[i,j]
             image_x [i,j]=0.5*(pad_image[i+2,j+1]-pad_image[i,j+1])
             image_y [i,j]=0.5*(pad_image[i+1,j+2]-pad_image[i+1,j])
-    return image_xx,image_yy,image_xy,image_x,image_y
+    return image_xx/(dx**2),image_yy/(dy**2),image_xy/(dx*dy),image_x/dx,image_y/dy
 
 def gauss_cur(image):
     """
@@ -119,7 +180,7 @@ def gauss_cur(image):
     image_xx,image_yy,image_xy,image_x,image_y=central_diff(image)
     image_x_2=image_x**2
     image_y_2=image_y**2
-    grad_matrix=image_x_2+image_y_2+1e-1*np.ones_like(image)
+    grad_matrix=image_x_2+image_y_2+1e-9*np.ones_like(image)
     cur_matrix=image_xx*image_y_2- 2*image_y*image_x*image_xy+\
                image_yy*image_x_2
     cur_matrix=cur_matrix/(grad_matrix**(1.5))
