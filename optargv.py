@@ -10,13 +10,16 @@ import sys, getopt
 
 def  default_options():
     options = {
-        "--image_path":"image/graph.png",
+        "--image_path":"image/strawberry.jpg",
         "--level_steps":10,
         "--d":2,
         "--cfl":0.5,
-        "--delta_t":1,
-        "--max_iter":100,
-        "--level_alpha":1,
+        "--delta_t":0.01,
+        "--max_iter":500,
+        "--level_alpha":30,
+        "--g_force_lambda":-1,
+        "--restart_num":10,
+        "--tol":1e-6,
         "--output_image":"None",
         "--iprint":10
         }
